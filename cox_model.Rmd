@@ -45,6 +45,8 @@ temp <- clindata[, c("OS_time","OS_status",Gene1)]
 res.cox <- coxph(Surv(as.numeric(OS_time),as.numeric(OS_status)) ~ Gene1, data=temp)
 summary(res.cox)
 ```
+
 # Notes
 1. “z” gives the Wald statistic value
-2. Sign of the regression coefficients (coef): A positive sign means that the hazard (risk of death) is higher, and thus the prognosis worse, for subjects with higher values of that variable
+2. Sign of the regression coefficients (coef): A positive sign means that the hazard (risk of death) is higher, 
+   and thus the prognosis worse, for subjects with higher values of that variable
