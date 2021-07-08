@@ -1,0 +1,50 @@
+---
+title: "Cox Proportional Hazards analysis"
+output: html_notebook
+---
+
+# Load data
+Load clinical data and append gene expression data to the dataframe
+```{r}
+library(dplyr)
+library(tibble)
+library(tidyverse)
+
+# genes in selected pathway
+geneset <- c(Gene1, Gene2, Gene3...)
+
+# gene expression data
+expdata <- read.table("microarray/GSEnnnnn",sep=",",header=T) # or read.delim
+rownames(expdata) <- expdata$Gene
+# filter selected genes
+expdata <- expdata %>%
+  filter(row.names(expdata) %in% geneset)
+
+# clinic data
+clindata <- read.table("clinical/GSEnnnnn",sep=",",header=T)
+rownames(clindata) <- clindata$Sample
+
+# append exp data to clinical data
+get_exp <- function(x,gene){ expdata[gene,x] }
+for (gene in geneset){
+  clindata[gene] <- sapply(clindata$Sample,get_exp,gene=gene)
+}
+```
+
+# Cox Proportional Hazards (CPH) Model: univariate
+Install required libraries and call the CPH regression model in R
+```{r}
+## if the packages are not installed:
+# install.packages(c("survival","survminer"))
+library(survival)
+library(survminer)
+clindata$gene_quartile <- ntile(clindata[,Gene1], n=4)
+temp <- clindata[, c("OS_time","OS_status",Gene1)]
+# to filter out a specific subset of the cohort for the CPH model
+# clindata <- clindata[clindata$gene_quartile==2,] 
+res.cox <- coxph(Surv(as.numeric(OS_time),as.numeric(OS_status)) ~ Gene1, data=temp)
+summary(res.cox)
+```
+# Notes
+1. “z” gives the Wald statistic value
+2. Sign of the regression coefficients (coef): A positive sign means that the hazard (risk of death) is higher, and thus the prognosis worse, for subjects with higher values of that variable
